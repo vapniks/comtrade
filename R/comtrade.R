@@ -12,6 +12,8 @@ comtrade.codes <- function() {
     require(rjson)
     reporters <- fromJSON(file="http://comtrade.un.org/data/cache/partnerAreas.json")
     reporters <- as.data.frame(t(sapply(reporters$results,rbind)))
+    rows <- !(reporters$V1 %in% c("all","All","ALL"))
+    data.frame(code=as.numeric(unlist(reporters$V1[rows])),name=unlist(reporters$V2[rows]))
 }
 
 
