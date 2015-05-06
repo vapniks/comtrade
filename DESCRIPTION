@@ -1,0 +1,12 @@
+Package: comtrade
+Title: Download comtrade data from http://comtrade.un.org 
+Version: 0.0.0.9000
+Authors@R: person("Joe", "Bloggs", , "vapniks@yahoo.com", role = c("aut", "cre"))
+Description: Download comtrade data from http://comtrade.un.org. This is a copy of the code at http://comtrade.un.org/data/Doc/api/ex/r but packaged in a library for convenience.
+Depends: R (>= 3.1.2)
+License: GNU GPLv3
+LazyData: true
+Collate:
+        'comtrade.R'
+Depends:
+        rjson
