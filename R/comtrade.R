@@ -40,10 +40,12 @@ comtrade.codes <- function(names=NULL) {
 ##' This function is copied from http://comtrade.un.org/data/Doc/api/ex/r with a few minor alterations,
 ##' and works as of 06/05/2015
 ##' To see a more detailed explanation of the parameters see: http://comtrade.un.org/data/doc/api/
+##' Note: you can use a maximum of 5 country codes at a time in for the 'r' and 'p' parameters, and a maximum of
+##' 5 different dates at a time.
 ##' @title comtrade.data 
 ##' @param r reporting area - either "all" or a numeric vector of reporting area codes, see \code{\link{comtrade.codes}}
 ##' @param p partner area - either "all" or a numeric vector of partner area codes, see \code{\link{comtrade.codes}}
-##' @param times time period - "now" (default), "recent" (5 most recent years/months), or a list of dates, strings or integers
+##' @param dates time periods - "now" (default), "recent" (5 most recent years/months), or a list of dates, strings or integers
 ##' indicating which years/months to include. The strings/integers should be in the form "YYYY" or "YYYYMM" where YYYY=year
 ##' and MM=month
 ##' @param freq frequency - "A"=annual (default), "M"=monthly
@@ -59,18 +61,18 @@ comtrade.codes <- function(names=NULL) {
 ##' @return A list containing a validation attribute (NULL for csv output), and a data attribute containing the data
 ##' @author Ben Veal
 ##' @export 
-comtrade.data <- function(r,p,times="now",freq="A",type="C",px="HS",
+comtrade.data <- function(r,p,dates="now",freq="A",type="C",px="HS",
                           rg="all",cc="TOTAL",maxrec=50000,validation=FALSE,
                           url="http://comtrade.un.org/api/get?") {
     require(rjson)
-    if(class(times) %in% c("integer","character")) {
-        ps <- times
-    } else if("POSIXct" %in% class(times)){
+    if(class(dates) %in% c("integer","character")) {
+        ps <- dates
+    } else if("POSIXct" %in% class(dates)){
         if(freq=="A")
-            ps <- format(times,"%Y")
+            ps <- format(dates,"%Y")
         else
-            ps <- format(times,"%Y%m")
-    } else stop("Invalid data type for 'times' param")
+            ps <- format(dates,"%Y%m")
+    } else stop("Invalid data type for 'dates' param")
     string<- paste0(url
                    ,"max=",maxrec,"&" #maximum no. of records returned
                    ,"type=",type,"&" #type of trade (c=commodities)
@@ -84,7 +86,7 @@ comtrade.data <- function(r,p,times="now",freq="A",type="C",px="HS",
                    ,"fmt=",ifelse(validation,"json","csv")) #Format
     if(!validation) {
         raw.data<- read.csv(string,header=TRUE)
-        return(list(validation=NULL, data=raw.data))
+        return(raw.data)
     } else {
         raw.data <- fromJSON(file=string)
         data <- raw.data$dataset
@@ -101,7 +103,7 @@ comtrade.data <- function(r,p,times="now",freq="A",type="C",px="HS",
             ndata <- as.data.frame(ndata)
             colnames(ndata) <- var.names
         }
-        return(list(validation=validation,data =ndata))
+        return(list(validation=validation,data=ndata))
     }
 }
 
