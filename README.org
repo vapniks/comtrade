@@ -1,4 +1,5 @@
 This library contains the R code for using the comtrade API for downloading data.\\
-Most of the code was copied from here: http://comtrade.un.org/data/Doc/api/ex/r .\\
+Most of the code was copied from here: http://comtrade.un.org/data/Doc/api/ex/r 
+\\
 Having it packaged as a library is more convenient.
 
