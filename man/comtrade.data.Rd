@@ -4,16 +4,20 @@
 \alias{comtrade.data}
 \title{comtrade.data}
 \usage{
-comtrade.data(url = "http://comtrade.un.org/api/get?", maxrec = 50000,
-  type = "C", freq = "A", px = "HS", ps = "now", r, p, rg = "all",
-  cc = "TOTAL", fmt = "json")
+comtrade.data(r, p, ps = "now", maxrec = 50000, type = "C", freq = "A",
+  px = "HS", rg = "all", cc = "TOTAL", validation = FALSE,
+  url = "http://comtrade.un.org/api/get?")
 }
 \arguments{
-\item{url}{url for http api (you probably don't need to touch this)}
+\item{r}{reporting area - either "all" or a numeric vector of reporting area codes, see \code{\link{comtrade.codes}}}
+
+\item{p}{partner area - either "all" or a numeric vector of partner area codes, see \code{\link{comtrade.codes}}}
+
+\item{ps}{time period - "now" (default), "recent", or "YYYY" or "YYYYMM" where YYYY=year and MM=month}
 
 \item{maxrec}{maximum number of records to download (default = 50000 the maximum possible number)}
 
-\item{type}{type of trade - "C" (default), "S" (not yet available) trade in services data}
+\item{type}{type of trade - "C"=commodities (default), "S"=services (not yet available)}
 
 \item{freq}{frequency - "A"=annual (default), "M"=monthly}
 
@@ -21,17 +25,13 @@ comtrade.data(url = "http://comtrade.un.org/api/get?", maxrec = 50000,
 "H4"=HS 2012, "ST"=Standard International Trade Classification (SITC), "S1"=SITC revision 1, "S2"=SITC revision 2,
 "S3"=SITC revision 3, "S4"=SITC revision 4, "BEC"=Broad Economic Categories.}
 
-\item{ps}{time period - "now" (default), "recent", or "YYYY" or "YYYYMM" where YYYY=year and MM=month}
-
-\item{r}{reporting area - "all", see \code{\link{comtrade.codes}}}
-
-\item{p}{partner area - "all", see \code{\link{comtrade.codes}}}
-
 \item{rg}{trade regime/flow - "all" (default), "1" (imports), "2" (exports), "3" (re-Export), "4" (re-Import)}
 
 \item{cc}{classification code - "AG1", "AG2" (default), "AG3", "AG4", "AG5", "AG6", "TOTAL" or "ALL"}
 
-\item{fmt}{output format - "json" (default), or "csv". json output includes validation information.}
+\item{validation}{whether or not to return validation information (showing download status, time, etc.)}
+
+\item{url}{url for http api (you probably dont need to touch this)}
 }
 \value{
 A list containing a validation attribute (NULL for csv output), and a data attribute containing the data
@@ -40,7 +40,8 @@ A list containing a validation attribute (NULL for csv output), and a data attri
 Download data from http://comtrade.un.org/data/
 }
 \details{
-This function is copied directly from http://comtrade.un.org/data/Doc/api/ex/r and works as of 06/05/2015
+This function is copied from http://comtrade.un.org/data/Doc/api/ex/r with a few minor alterations,
+and works as of 06/05/2015
 To see a more detailed explanation of the parameters see: http://comtrade.un.org/data/doc/api/
 }
 \author{

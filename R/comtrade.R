@@ -1,19 +1,37 @@
 .packageName <- "comtrade"
 
 
-##' Show country codes for comtrade.data reporter and partner params
+##' Obtain country codes for comtrade.data reporter and partner params
 ##'
-##' This function is copied directly from http://comtrade.un.org/data/Doc/api/ex/r and works as of 06/05/2015
+##' This function is copied from http://comtrade.un.org/data/Doc/api/ex/r with a few alteration,
+##' and works as of 06/05/2015
 ##' @title comtrade.codes
-##' @return A data.frame containing country names and associated reporter numbers.
+##' @param names An optional list of country names to return the codes for. If this is left blank then all available
+##' codes will be returned. You can include "World" in the this list.
+##' @return A data.frame containing country names and associated reporter codes.
 ##' @author Ben Veal
 ##' @export 
-comtrade.codes <- function() {
+comtrade.codes <- function(names=NULL) {
     require(rjson)
+    require(countrycode)
     reporters <- fromJSON(file="http://comtrade.un.org/data/cache/partnerAreas.json")
     reporters <- as.data.frame(t(sapply(reporters$results,rbind)))
     rows <- !(reporters$V1 %in% c("all","All","ALL"))
-    data.frame(code=as.numeric(unlist(reporters$V1[rows])),name=unlist(reporters$V2[rows]))
+    data <- data.frame(code=as.numeric(unlist(reporters$V1[rows])),name=unlist(reporters$V2[rows]))
+    if(!is.null(names)) {
+        stopifnot(is.character(names))
+        world <- which(names %in% c("World","world","WORLD"))
+        notworld <- setdiff(1:length(names),world)
+        codes <- numeric(length(names))
+        codes[world] <- 0
+        codes[notworld] <- countrycode(names[notworld],"country.name","un")
+        missing <- is.na(codes)
+        if(any(missing))
+            warning("No code found for: ",paste(names[which(missing)],collapse=","))
+        return(data[data$code %in% codes,])
+    } else {
+        return(data)
+    }
 }
 
 
