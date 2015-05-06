@@ -4,22 +4,21 @@
 \alias{comtrade.data}
 \title{comtrade.data}
 \usage{
-comtrade.data(r, p, ps = "now", maxrec = 50000, type = "C", freq = "A",
-  px = "HS", rg = "all", cc = "TOTAL", validation = FALSE,
-  url = "http://comtrade.un.org/api/get?")
+comtrade.data(r, p, dates = "now", freq = "A", type = "C", px = "HS",
+  rg = "all", cc = "TOTAL", maxrec = 50000, validation = FALSE)
 }
 \arguments{
 \item{r}{reporting area - either "all" or a numeric vector of reporting area codes, see \code{\link{comtrade.codes}}}
 
 \item{p}{partner area - either "all" or a numeric vector of partner area codes, see \code{\link{comtrade.codes}}}
 
-\item{ps}{time period - "now" (default), "recent", or "YYYY" or "YYYYMM" where YYYY=year and MM=month}
-
-\item{maxrec}{maximum number of records to download (default = 50000 the maximum possible number)}
-
-\item{type}{type of trade - "C"=commodities (default), "S"=services (not yet available)}
+\item{dates}{time periods - "now" (default), "recent" (5 most recent years/months), or a list of dates, strings or integers
+indicating which years/months to include. The strings/integers should be in the form "YYYY" or "YYYYMM" where YYYY=year
+and MM=month}
 
 \item{freq}{frequency - "A"=annual (default), "M"=monthly}
+
+\item{type}{type of trade - "C"=commodities (default), "S"=services (not yet available)}
 
 \item{px}{classification - "HS"=harmonized system (default), "H0"=HS 1992, "H1"=HS 1996, "H2"=HS 2002, "H3"=HS 2007,
 "H4"=HS 2012, "ST"=Standard International Trade Classification (SITC), "S1"=SITC revision 1, "S2"=SITC revision 2,
@@ -29,9 +28,9 @@ comtrade.data(r, p, ps = "now", maxrec = 50000, type = "C", freq = "A",
 
 \item{cc}{classification code - "AG1", "AG2" (default), "AG3", "AG4", "AG5", "AG6", "TOTAL" or "ALL"}
 
-\item{validation}{whether or not to return validation information (showing download status, time, etc.)}
+\item{maxrec}{maximum number of records to download (default = 50000 the maximum possible number)}
 
-\item{url}{url for http api (you probably dont need to touch this)}
+\item{validation}{whether or not to return validation information (showing download status, time, etc.). Default is FALSE.}
 }
 \value{
 A list containing a validation attribute (NULL for csv output), and a data attribute containing the data
@@ -40,9 +39,7 @@ A list containing a validation attribute (NULL for csv output), and a data attri
 Download data from http://comtrade.un.org/data/
 }
 \details{
-This function is copied from http://comtrade.un.org/data/Doc/api/ex/r with a few minor alterations,
-and works as of 06/05/2015
-To see a more detailed explanation of the parameters see: http://comtrade.un.org/data/doc/api/
+For a more detailed explanation of the parameters see: http://comtrade.un.org/data/doc/api/
 }
 \author{
 Ben Veal

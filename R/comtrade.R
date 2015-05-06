@@ -36,12 +36,9 @@ comtrade.codes <- function(names=NULL) {
 
 
 ##' Download data from http://comtrade.un.org/data/
+##'
+##' For a more detailed explanation of the parameters see: http://comtrade.un.org/data/doc/api/
 ##' 
-##' This function is copied from http://comtrade.un.org/data/Doc/api/ex/r with a few minor alterations,
-##' and works as of 06/05/2015
-##' To see a more detailed explanation of the parameters see: http://comtrade.un.org/data/doc/api/
-##' Note: you can use a maximum of 5 country codes at a time in for the 'r' and 'p' parameters, and a maximum of
-##' 5 different dates at a time.
 ##' @title comtrade.data 
 ##' @param r reporting area - either "all" or a numeric vector of reporting area codes, see \code{\link{comtrade.codes}}
 ##' @param p partner area - either "all" or a numeric vector of partner area codes, see \code{\link{comtrade.codes}}
@@ -57,34 +54,63 @@ comtrade.codes <- function(names=NULL) {
 ##' @param cc classification code - "AG1", "AG2" (default), "AG3", "AG4", "AG5", "AG6", "TOTAL" or "ALL"
 ##' @param maxrec maximum number of records to download (default = 50000 the maximum possible number)
 ##' @param validation whether or not to return validation information (showing download status, time, etc.). Default is FALSE.
-##' @param url url for http api (you probably dont need to touch this)
 ##' @return A list containing a validation attribute (NULL for csv output), and a data attribute containing the data
 ##' @author Ben Veal
 ##' @export 
 comtrade.data <- function(r,p,dates="now",freq="A",type="C",px="HS",
-                          rg="all",cc="TOTAL",maxrec=50000,validation=FALSE,
-                          url="http://comtrade.un.org/api/get?") {
+                          rg="all",cc="TOTAL",maxrec=50000,validation=FALSE) {
     require(rjson)
     if(class(dates) %in% c("integer","character")) {
         ps <- dates
-    } else if("POSIXct" %in% class(dates)){
+    } else if("POSIXct" %in% class(dates)) {
         if(freq=="A")
             ps <- format(dates,"%Y")
         else
             ps <- format(dates,"%Y%m")
     } else stop("Invalid data type for 'dates' param")
+    chunk <- function(x,n) split(x,rep(1:ceiling(length(x)/n),each=n)[1:length(x)])
+    ## We can only submit 5 values at a time for the r, p and dates parameter,
+    ## so work out different parameter combinations required
+    params <- expand.grid(chunk(r,5),chunk(p,5),chunk(dates,5))
+    results <- validations <- list()
+    ## loop over all possible parameter combinations
+    for(row in 1:nrow(params)) {
+        thisresult <- .comtrade.download(r=paste(params[row,1][[1]],collapse=","),
+                                         p=paste(params[row,2][[1]],collapse=","),
+                                         ps=paste(params[row,3][[1]],collapse=","),
+                                         freq=freq,type=type,px=px,rg=rg,cc=cc,maxrec=maxrec,
+                                         fmt=ifelse(validation,"json","csv"),
+                                         url="http://comtrade.un.org/api/get?")
+        results <- c(results,list(thisresult$data))
+        validations <- c(validations,thisresult$validation)
+        ## pause for a bit before the next download
+        if(nrow(params) > 1) Sys.sleep(1.1)
+    }
+    return(list(validation=validations,data=do.call(rbind,results)))
+}
+
+
+
+##' This function is copied from http://comtrade.un.org/data/Doc/api/ex/r with a few minor alterations,
+##' and works as of 06/05/2015
+##' For a more detailed explanation of the parameters see: http://comtrade.un.org/data/doc/api/
+##' Note: you can use a maximum of 5 country codes at a time in for the 'r' and 'p' parameters, and a maximum of
+##' 5 different dates at a time.
+.comtrade.download <- function(r,p,ps="now",freq="A",type="C",px="HS",
+                               rg="all",cc="TOTAL",maxrec=50000,fmt="json",
+                               url="http://comtrade.un.org/api/get?") {
     string<- paste0(url
                    ,"max=",maxrec,"&" #maximum no. of records returned
                    ,"type=",type,"&" #type of trade (c=commodities)
                    ,"freq=",freq,"&" #frequency
                    ,"px=",px,"&" #classification
-                   ,"ps=",paste(ps,collapse=","),"&" #time period
-                   ,"r=",paste(r,collapse=","),"&" #reporting area
-                   ,"p=",paste(p,collapse=","),"&" #partner country
+                   ,"ps=",ps,"&" #time period
+                   ,"r=",r,"&" #reporting area
+                   ,"p=",p,"&" #partner country
                    ,"rg=",rg,"&" #trade flow
                    ,"cc=",cc,"&" #classification code
-                   ,"fmt=",ifelse(validation,"json","csv")) #Format
-    if(!validation) {
+                   ,"fmt=",fmt) #Format
+    if(fmt=="csv") {
         raw.data<- read.csv(string,header=TRUE)
         return(raw.data)
     } else {
@@ -106,4 +132,3 @@ comtrade.data <- function(r,p,dates="now",freq="A",type="C",px="HS",
         return(list(validation=validation,data=ndata))
     }
 }
-
