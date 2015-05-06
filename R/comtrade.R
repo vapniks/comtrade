@@ -43,30 +43,40 @@ comtrade.codes <- function(names=NULL) {
 ##' @title comtrade.data 
 ##' @param r reporting area - either "all" or a numeric vector of reporting area codes, see \code{\link{comtrade.codes}}
 ##' @param p partner area - either "all" or a numeric vector of partner area codes, see \code{\link{comtrade.codes}}
-##' @param ps time period - "now" (default), "recent", or "YYYY" or "YYYYMM" where YYYY=year and MM=month
-##' @param maxrec maximum number of records to download (default = 50000 the maximum possible number)
-##' @param type type of trade - "C"=commodities (default), "S"=services (not yet available)
+##' @param times time period - "now" (default), "recent" (5 most recent years/months), or a list of dates, strings or integers
+##' indicating which years/months to include. The strings/integers should be in the form "YYYY" or "YYYYMM" where YYYY=year
+##' and MM=month
 ##' @param freq frequency - "A"=annual (default), "M"=monthly
+##' @param type type of trade - "C"=commodities (default), "S"=services (not yet available)
 ##' @param px classification - "HS"=harmonized system (default), "H0"=HS 1992, "H1"=HS 1996, "H2"=HS 2002, "H3"=HS 2007,
 ##' "H4"=HS 2012, "ST"=Standard International Trade Classification (SITC), "S1"=SITC revision 1, "S2"=SITC revision 2,
 ##' "S3"=SITC revision 3, "S4"=SITC revision 4, "BEC"=Broad Economic Categories.
 ##' @param rg trade regime/flow - "all" (default), "1" (imports), "2" (exports), "3" (re-Export), "4" (re-Import)
 ##' @param cc classification code - "AG1", "AG2" (default), "AG3", "AG4", "AG5", "AG6", "TOTAL" or "ALL"
-##' @param validation whether or not to return validation information (showing download status, time, etc.)
+##' @param maxrec maximum number of records to download (default = 50000 the maximum possible number)
+##' @param validation whether or not to return validation information (showing download status, time, etc.). Default is FALSE.
 ##' @param url url for http api (you probably dont need to touch this)
 ##' @return A list containing a validation attribute (NULL for csv output), and a data attribute containing the data
 ##' @author Ben Veal
 ##' @export 
-comtrade.data <- function(r,p,ps="now",maxrec=50000,type="C",freq="A",px="HS",
-                          rg="all",cc="TOTAL",validation=FALSE,
+comtrade.data <- function(r,p,times="now",freq="A",type="C",px="HS",
+                          rg="all",cc="TOTAL",maxrec=50000,validation=FALSE,
                           url="http://comtrade.un.org/api/get?") {
     require(rjson)
+    if(class(times) %in% c("integer","character")) {
+        ps <- times
+    } else if("POSIXct" %in% class(times)){
+        if(freq=="A")
+            ps <- format(times,"%Y")
+        else
+            ps <- format(times,"%Y%m")
+    } else stop("Invalid data type for 'times' param")
     string<- paste0(url
                    ,"max=",maxrec,"&" #maximum no. of records returned
                    ,"type=",type,"&" #type of trade (c=commodities)
                    ,"freq=",freq,"&" #frequency
                    ,"px=",px,"&" #classification
-                   ,"ps=",ps,"&" #time period
+                   ,"ps=",paste(ps,collapse=","),"&" #time period
                    ,"r=",paste(r,collapse=","),"&" #reporting area
                    ,"p=",paste(p,collapse=","),"&" #partner country
                    ,"rg=",rg,"&" #trade flow
