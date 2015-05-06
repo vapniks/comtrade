@@ -82,13 +82,12 @@ comtrade.data <- function(r,p,dates="now",freq="A",type="C",px="HS",
                                          fmt=ifelse(validation,"json","csv"),
                                          url="http://comtrade.un.org/api/get?")
         results <- c(results,list(thisresult$data))
-        validations <- c(validations,thisresult$validation)
+        validations <- c(validations,list(thisresult$validation))
         ## pause for a bit before the next download
         if(nrow(params) > 1) Sys.sleep(1.1)
     }
     return(list(validation=validations,data=do.call(rbind,results)))
 }
-
 
 
 ##' This function is copied from http://comtrade.un.org/data/Doc/api/ex/r with a few minor alterations,
